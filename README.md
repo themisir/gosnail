@@ -25,6 +25,7 @@ func main() {
 
   // Simple GET / request handler
   //
+  // Arguments:
   //   ctx  - is request context contains request and response details
   //   next - calling this function fill forward request to the next handler
   router.Get("/", func (ctx *gosnail.Context, next func()) {
