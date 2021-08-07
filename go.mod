@@ -1,3 +1,3 @@
-module github.com/themisir/gosnail
+module gosnail
 
 go 1.16

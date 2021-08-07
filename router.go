@@ -1,58 +1,74 @@
-package gosnail
+package main
 
-import "net/http"
+import (
+	"net/http"
+	"strings"
+)
 
 type RouterHandler = func(*Context, func())
 
+const Any = ""
+
 type RouterEntry struct {
-	method   string
-	path     string
-	handlers []RouterHandler
+	method    string
+	path      string
+	pathRange bool
+	handlers  []RouterHandler
+	next      *RouterEntry
 }
 
 type Router struct {
-	entries []*RouterEntry
+	head *RouterEntry
+	foot *RouterEntry
 }
 
 func NewRouter() *Router {
-	return &Router{
-		entries: []*RouterEntry{},
-	}
+	return &Router{}
 }
 
 func (r *Router) Next(ctx *Context, next func()) {
-	for _, entry := range r.entries {
+	for entry := r.head; entry != nil; entry = entry.next {
+
 		if len(entry.handlers) == 0 {
 			continue
 		}
 
-		if ctx.req.Method != entry.method {
+		if entry.method != "" && entry.method != ctx.req.Method {
 			continue
 		}
 
-		if ctx.req.URL.Path != entry.path {
-			continue
-		}
+		if entry.path != "" && entry.path != ctx.req.URL.Path {
+			if entry.pathRange {
+				match := entry.path
 
-		if len(entry.handlers) == 1 {
-			entry.handlers[0](ctx, next)
-			return
-		}
+				if !strings.HasSuffix(match, "/") {
+					match = match + "/"
+				}
 
-		var nextFunc func()
-		i := -1
-
-		nextFunc = func() {
-			i++
-			if i < len(entry.handlers) {
-				entry.handlers[i](ctx, nextFunc)
+				if !strings.HasPrefix(ctx.req.URL.Path, match) {
+					continue
+				}
 			} else {
-				next()
+				continue
 			}
 		}
 
-		nextFunc()
-		return
+		doContinue := false
+
+		for _, handler := range entry.handlers {
+			doContinue = false
+			handler(ctx, func() {
+				doContinue = true
+			})
+
+			if !doContinue {
+				break
+			}
+		}
+
+		if !doContinue {
+			break
+		}
 	}
 
 	next()
@@ -60,12 +76,25 @@ func (r *Router) Next(ctx *Context, next func()) {
 
 func (r *Router) Handle(method string, path string, handlers ...RouterHandler) {
 	if len(handlers) > 0 {
-		r.entries = append(r.entries, &RouterEntry{
+		entry := &RouterEntry{
 			path:     path,
 			method:   method,
 			handlers: handlers,
-		})
+		}
+
+		if r.foot == nil {
+			r.head = entry
+			r.foot = entry
+		} else {
+			r.foot.next = entry
+			r.foot = entry
+		}
 	}
+}
+
+func (r *Router) Use(path string, handlers ...RouterHandler) {
+	r.Handle("", path, handlers...)
+	r.foot.pathRange = true
 }
 
 func (r *Router) Get(path string, handlers ...RouterHandler) {

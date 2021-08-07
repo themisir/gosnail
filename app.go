@@ -1,9 +1,7 @@
-package gosnail
+package main
 
 import (
 	"net/http"
-
-	"github.com/themisir/gosnail/core"
 )
 
 type Handler interface {
@@ -25,13 +23,13 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Method:      r.Method,
 		QueryParams: &query,
 		body:        r.Body,
-		headers:     core.NewHeadersFromValues(r.Header),
+		headers:     NewHeadersFromValues(r.Header),
 		req:         r,
 	}
 	res := &Response{
+		StatusCode:  http.StatusOK,
 		w:           w,
-		statusCode:  http.StatusOK,
-		headers:     core.NewHeaders(),
+		headers:     NewHeaders(),
 		headersSent: false,
 	}
 	ctx := &Context{
@@ -41,7 +39,7 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	a.handler.Next(ctx, func() {
-		ctx.Response().SetStatusCode(404)
+		ctx.Response().StatusCode = http.StatusNotFound
 		ctx.Response().End()
 	})
 }

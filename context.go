@@ -1,4 +1,4 @@
-package gosnail
+package main
 
 type Context struct {
 	req    *Request

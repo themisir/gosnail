@@ -1,11 +1,9 @@
-package gosnail
+package main
 
 import (
 	"io"
 	"net/http"
 	"net/url"
-
-	"github.com/themisir/gosnail/core"
 )
 
 type Request struct {
@@ -13,11 +11,11 @@ type Request struct {
 	URL         *url.URL
 	QueryParams *url.Values
 	body        io.ReadCloser
-	headers     *core.Headers
+	headers     *Headers
 	req         *http.Request
 }
 
-func (r *Request) Headers() *core.Headers {
+func (r *Request) Headers() *Headers {
 	return r.headers
 }
 

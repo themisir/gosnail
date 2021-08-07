@@ -1,31 +1,40 @@
-package gosnail
+package main
 
 import (
+	"errors"
 	"net/http"
-
-	"github.com/themisir/gosnail/core"
 )
 
 type Response struct {
+	StatusCode  int
 	w           http.ResponseWriter
-	statusCode  int
-	headers     *core.Headers
+	headers     *Headers
 	headersSent bool
 }
 
-func (r *Response) Headers() *core.Headers {
+func (r *Response) Headers() *Headers {
 	return r.headers
 }
 
-func (r *Response) StatusCode() int {
-	return r.statusCode
-}
+func (r *Response) SendHeaders() error {
+	if r.headersSent {
+		return errors.New("headers already sent")
+	}
 
-func (r *Response) SetStatusCode(code int) {
-	r.statusCode = code
+	for k, v := range r.headers.values {
+		r.w.Header().Add(k, v)
+	}
+
+	r.w.WriteHeader(r.StatusCode)
+	r.headersSent = true
+
+	return nil
 }
 
 func (r *Response) Write(data []byte) (int, error) {
+	if !r.headersSent {
+		r.SendHeaders()
+	}
 	return r.w.Write(data)
 }
 
