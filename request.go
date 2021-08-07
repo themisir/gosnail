@@ -1,10 +1,11 @@
 package gosnail
 
 import (
-	"gosnail/core"
 	"io"
 	"net/http"
 	"net/url"
+
+	"github.com/themisir/gosnail/core"
 )
 
 type Request struct {

@@ -3,7 +3,7 @@ package gosnail
 import (
 	"fmt"
 
-	"github.com/TheMisir/gosnail/gosnail"
+	"github.com/themisir/gosnail"
 )
 
 func main() {

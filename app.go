@@ -1,8 +1,9 @@
 package gosnail
 
 import (
-	"gosnail/core"
 	"net/http"
+
+	"github.com/themisir/gosnail/core"
 )
 
 type Handler interface {
