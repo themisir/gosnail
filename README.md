@@ -50,7 +50,7 @@ func main() {
   })
 
   // Another simple GET /users handler.
-  
+  //
   // This handler will get called only if previously registered middleware
   // forwards request to it.
   router.Get("/users", func (ctx *gosnail.Context, next func()) {
